@@ -69,6 +69,40 @@ app.post('/tasks', (req, res) => {
   res.status(201).json(newTask);
 });
 
+
+app.put('/tasks/:id', (req, res) => {
+  const id = parseInt(req.params.id);
+  const tk = task.find(t => t.id === id);
+
+  if (!tk) {
+    return res.status(404).json({ error: `Task ${id} not found` });
+  }
+
+  const { title, done } = req.body;
+
+  if (title === undefined && done === undefined) {
+    return res.status(400).json({ error: "Provide title or done to update" });
+  }
+
+  tk.title = title;
+  tk.done = done;
+
+  res.json(tk);
+});
+
+
+app.delete('/tasks/:id', (req, res) => {
+  const id = parseInt(req.params.id);
+  const index = task.findIndex(t => t.id === id);
+
+  if (index === -1) {
+    return res.status(404).json({ error: `Task ${id} not found` });
+  }
+
+  task.splice(index, 1);
+  res.status(204).send();
+});
+
  app.listen(3000,()=>{
    console.log(`Server is running on http://localhost:3000`);
      console.log(`for intro http://localhost:3000/`);
