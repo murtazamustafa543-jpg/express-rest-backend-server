@@ -128,7 +128,31 @@ This happens because data is stored in-memory (a JavaScript array), not in a dat
 the array resets to its original 3 tasks every time the server starts fresh. 
 
 ---
+## Stage 7 — AI vs Me
 
+### My Prompt
+
+ok so basically i am a writing my fisrt assignemnt as a part of my flyrank backend ai engeenring internship which is regarding a Crud Api using node.js + express , i want you to write a Api thta has a port number 3000 and  firstly checks if the server runs then ,then i want you to use get to add an endpoint describing my api and its health then i want you to create an in memoey of a array called task that contain my todo tasks and want to add data variable , of id , title and done , do minimum 3 and max how much you want , then i want to use get operation to get all the tasks as well as tasks by id , then i want you to use post to add a new todo task, and then stage 4 use put and delete to update and delete atask use curl to check , validate  post for if title is missing or empty , validate put for  if body is empty delete using 400 and 404 error and retirn 200 along with apporpriate message accoding to the error and and accoridng to the good status for all 4, and 201 (post) and 204 ( delete ), then i want you to use swagger ui to use this index json file and make a new openapi.json to make a  interactive documentation: every endpoint listed, with a Try it out button that sends real requests, then stage 6 publish it on github
+
+### What the AI did better
+- Code was cleaner and more structured overall
+- Used built-in functions I wasn't aware of as a beginner
+- Had well-structured comments throughout
+- Swagger UI was more detailed — included specific schemas, task contents, and health descriptions
+- Automatically set up a git folder with history
+
+### What it got wrong or ignored
+- Named the file `server.js` instead of `index.js` even though I specified it
+- Used `tasks` for the array name instead of `task` as I specified
+- Served Swagger at `/api-docs` instead of `/docs` since I didn't specify the path
+
+### What my prompt forgot to specify
+- The Swagger UI path (`/docs`)
+- The error response format (`{ "error": ... }` vs `{ "message": ... }`)
+- The exact file name (`index.js`)
+- The array name was specified but ignored — more precise prompts needed
+
+---
 ## About
 
 Built by Murtaza Mustafa — Back-End AI Engineering Intern at FlyRank  
