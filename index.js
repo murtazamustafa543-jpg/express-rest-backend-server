@@ -87,8 +87,8 @@ app.put('/tasks/:id', (req, res) => {
     return res.status(400).json({ error: "Provide title or done to update" });
   }
 
-  tk.title = title;
-  tk.done = done;
+  if (title !== undefined) tk.title = title;
+  if (done !== undefined) tk.done = done;
 
   res.json(tk);
 });
