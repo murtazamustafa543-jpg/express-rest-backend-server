@@ -106,6 +106,36 @@ app.delete('/tasks/:id', (req, res) => {
   res.status(204).send();
 });
 
+app.get('/tasks/extra', (req, res) => {
+  const { done, search } = req.query;
+
+  let result = task;
+
+  if (done !== undefined) {
+    const isDone = done === 'true';
+    result = result.filter(t => t.done === isDone);
+  }
+
+  res.json(result);
+});
+
+app.get('/tasks/extra', (req, res) => {
+  const { done, search } = req.query;
+
+  let result = task;
+
+  if (done !== undefined) {
+    const isDone = done === 'true';
+    result = result.filter(t => t.done === isDone);
+  }
+
+  if (search !== undefined) {
+    result = result.filter(t => t.title.toLowerCase().includes(search.toLowerCase()));
+  }
+
+  res.json(result);
+});
+
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
  app.listen(3000,()=>{
