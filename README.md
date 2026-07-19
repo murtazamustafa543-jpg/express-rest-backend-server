@@ -121,6 +121,14 @@ Interactive API documentation available at http://localhost:3000/docs
 
 ---
 
+## The Mortality Experiment
+
+When the server restarts, all tasks created during the previous session are permanently lost. 
+This happens because data is stored in-memory (a JavaScript array), not in a database — 
+the array resets to its original 3 tasks every time the server starts fresh. 
+
+---
+
 ## About
 
 Built by Murtaza Mustafa — Back-End AI Engineering Intern at FlyRank  
