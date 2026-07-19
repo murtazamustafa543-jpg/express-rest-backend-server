@@ -1,0 +1,16 @@
+{
+  "name": "task-crud-api",
+  "version": "1.0.0",
+  "description": "CRUD API for managing todo tasks, built with Node.js and Express.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^5.2.1",
+    "swagger-ui-express": "^5.0.1"
+  }
+}
