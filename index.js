@@ -51,6 +51,24 @@ app.get('/tasks/:id', (req, res) => {
 
   res.json(tk);
 });
+
+app.post('/tasks', (req, res) => {
+  const { title } = req.body;
+
+  if (!title || title.trim() === '') {
+    return res.status(400).json({ error: "Title is required" });
+  }
+
+  const newTask = {
+    id: task.length + 1,
+    title: title,
+    done: false
+  };
+
+  task.push(newTask);
+  res.status(201).json(newTask);
+});
+
  app.listen(3000,()=>{
    console.log(`Server is running on http://localhost:3000`);
      console.log(`for intro http://localhost:3000/`);
