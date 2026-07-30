@@ -153,6 +153,37 @@ ok so basically i am a writing my fisrt assignemnt as a part of my flyrank backe
 - The array name was specified but ignored — more precise prompts needed
 
 ---
+## ASSIGNMENT 2 
+---
+## Database
+
+This project uses SQLite via `better-sqlite3`.
+
+- Database file: `tasks.db` (created automatically on first run, git-ignored)
+- Table: `tasks` with columns `id`, `title`, `done`
+- Three example tasks are seeded on first run only
+
+### Why SQLite?
+Zero setup, no server needed, single file on disk.
+Data survives server restarts unlike the in-memory array from Week 2.
+
+### How to Run
+```bash
+npm install
+node index.js
+```
+Server starts at http://localhost:3000
+Database is created automatically on first run.
+
+### Example SQL Query
+```sql
+SELECT * FROM tasks WHERE done = 1;
+```
+Returns all completed tasks directly from the database.
+
+### DB Browser Screenshot
+![DB Browser](dbrowser.png)
+---
 ## About
 
 Built by Murtaza Mustafa — Back-End AI Engineering Intern at FlyRank  
