@@ -8,7 +8,7 @@ const db = new Database('tasks.db');
 
 app.use(express.json());
 
-// Create table if not exists
+
 db.exec(`
   CREATE TABLE IF NOT EXISTS tasks (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -17,7 +17,7 @@ db.exec(`
   )
 `);
 
-// Seed only if empty
+
 const count = db.prepare('SELECT COUNT(*) as count FROM tasks').get();
 if (count.count === 0) {
   db.prepare("INSERT INTO tasks (title, done) VALUES (?, ?)").run('Do assignment 1', 0);
@@ -25,7 +25,7 @@ if (count.count === 0) {
   db.prepare("INSERT INTO tasks (title, done) VALUES (?, ?)").run('Take a shower', 0);
 }
 
-// ROOT
+
 app.get('/', (req, res) => {
   res.json({
     name: "Task API",
@@ -45,7 +45,7 @@ app.get('/tasks', (req, res) => {
   res.json(tasks);
 });
 
-// GET SINGLE TASK
+
 app.get('/tasks/:id', (req, res) => {
   const id = parseInt(req.params.id);
   const task = db.prepare('SELECT * FROM tasks WHERE id = ?').get(id);
@@ -58,14 +58,11 @@ app.get('/tasks/:id', (req, res) => {
 
 app.post('/tasks', (req, res) => {
   const { title } = req.body;
-
   if (!title || title.trim() === '') {
     return res.status(400).json({ error: "Title is required" });
   }
-
   const result = db.prepare('INSERT INTO tasks (title, done) VALUES (?, ?)').run(title, 0);
   const newTask = db.prepare('SELECT * FROM tasks WHERE id = ?').get(result.lastInsertRowid);
-
   res.status(201).json(newTask);
 });
 
@@ -73,22 +70,36 @@ app.post('/tasks', (req, res) => {
 app.put('/tasks/:id', (req, res) => {
   const id = parseInt(req.params.id);
   const task = db.prepare('SELECT * FROM tasks WHERE id = ?').get(id);
+
   if (!task) {
     return res.status(404).json({ error: `Task ${id} not found` });
   }
+
   const { title, done } = req.body;
+
   if (title === undefined && done === undefined) {
     return res.status(400).json({ error: "Provide title or done to update" });
   }
-  res.json(task);
+
+  const newTitle = title !== undefined ? title : task.title;
+  const newDone = done !== undefined ? (done ? 1 : 0) : task.done;
+
+  db.prepare('UPDATE tasks SET title = ?, done = ? WHERE id = ?').run(newTitle, newDone, id);
+
+  const updatedTask = db.prepare('SELECT * FROM tasks WHERE id = ?').get(id);
+  res.json(updatedTask);
 });
+
 
 app.delete('/tasks/:id', (req, res) => {
   const id = parseInt(req.params.id);
   const task = db.prepare('SELECT * FROM tasks WHERE id = ?').get(id);
+
   if (!task) {
     return res.status(404).json({ error: `Task ${id} not found` });
   }
+
+  db.prepare('DELETE FROM tasks WHERE id = ?').run(id);
   res.status(204).send();
 });
 
