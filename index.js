@@ -43,6 +43,7 @@ app.get('/health', (req, res) => {
 
 
 app.get('/tasks', async (req, res) => {
+  console.log('Reading tasks from Postgres');
   const { rows } = await db.query('SELECT * FROM tasks');
   res.json(rows);
 });
