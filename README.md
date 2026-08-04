@@ -184,6 +184,55 @@ Returns all completed tasks directly from the database.
 ### DB Browser Screenshot
 ![DB Browser](dbrowser.png)
 ---
+---
+## ASSIGNMENT 3
+---
+## Docker & Postgres
+
+This project uses Docker Compose to run the whole stack with one command.
+
+### How to Run
+```bash
+cp .env.example .env
+docker compose up
+```
+
+Server starts at http://localhost:3000
+Database is created automatically on first run.
+
+### Environment Variables
+Copy `.env.example` to `.env` and fill in the values:
+
+DATABASE_URL=postgres://postgres:dev@db:5432/tasks
+
+
+### Why Postgres?
+Postgres is a production-grade database server used by real companies including FlyRank.
+Unlike SQLite, it runs as its own program and handles many users at once.
+
+### Why Docker?
+Docker eliminates "works on my machine" — anyone can clone this repo and run the whole
+stack with one command, getting identical results on any machine.
+
+### Endpoints
+| Method | Endpoint | Description | Status Codes |
+|--------|----------|-------------|--------------|
+| GET | / | API info | 200 |
+| GET | /health | Health check | 200 |
+| GET | /tasks | Get all tasks | 200 |
+| GET | /tasks/:id | Get single task | 200, 404 |
+| POST | /tasks | Create task | 201, 400 |
+| PUT | /tasks/:id | Update task | 200, 400, 404 |
+| DELETE | /tasks/:id | Delete task | 204, 404 |
+
+### Example
+```bash
+curl -i http://localhost:3000/tasks
+```
+
+### Database Screenshot
+![Database](dbscreenshot.png)
+
 ## About
 
 Built by Murtaza Mustafa — Back-End AI Engineering Intern at FlyRank  
