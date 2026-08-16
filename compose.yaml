@@ -5,6 +5,8 @@ services:
       - "3000:3000"
     environment:
       DATABASE_URL: postgres://postgres:dev@db:5432/tasks
+      SUPABASE_URL: https://xzxhrfowlkqtkhtbtqnx.supabase.co
+      SUPABASE_KEY: sb_publishable_WVdLvCi0IKivIi1OZLCyUw_l-zZusTc
     depends_on:
       db:
         condition: service_healthy
