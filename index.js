@@ -167,7 +167,7 @@ app.get('/public/info', (req, res) => {
 });
 
 
-app.get('/protected/profile', (req, res) => {
+app.get('/protected/profile', async (req, res) => {
   const authHeader = req.headers['authorization'];
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -180,8 +180,19 @@ app.get('/protected/profile', (req, res) => {
     return res.status(401).json({ error: "Access token required" });
   }
 
- 
-  res.json({ message: "Token received but not verified yet" });
+  
+  const { data, error } = await supabase.auth.getUser(token);
+
+  if (error || !data.user) {
+    return res.status(401).json({ error: "Invalid or expired token" });
+  }
+
+  
+  res.json({
+    id: data.user.id,
+    email: data.user.email,
+    created_at: data.user.created_at
+  });
 });
 
 app.listen(3000, () => {
