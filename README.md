@@ -233,6 +233,60 @@ curl -i http://localhost:3000/tasks
 ### Database Screenshot
 ![Database](dbscreenshot.png)
 
+---
+## Assignment 4 — Auth: Login & Protect
+
+This assignment adds Supabase authentication to the API. Users can sign up, log in, and access protected routes using JWT tokens.
+
+### Setup
+
+1. Create a free project at supabase.com
+2. Copy `.env.example` to `.env` and fill in your Supabase values
+3. Turn off email confirmation in Supabase Dashboard → Authentication → Sign In / Providers → Email
+4. Run with Docker:
+
+```bash
+docker compose up
+```
+
+### Environment Variables
+
+SUPABASE_URL=your_project_url
+SUPABASE_KEY=your_publishable_key
+DATABASE_URL=postgres://postgres:dev@db:5432/tasks
+
+
+### Auth Endpoints
+
+| Method | Endpoint | Auth Required | Description | Status Codes |
+|--------|----------|--------------|-------------|--------------|
+| POST | /auth/signup | No | Create new account | 201, 400 |
+| POST | /auth/login | No | Login and get JWT token | 200, 401 |
+| POST | /auth/logout | Yes | End session | 204, 401 |
+| GET | /public/info | No | Public data anyone can access | 200 |
+| GET | /protected/profile | Yes | Logged in user profile | 200, 401 |
+| GET | /protected/dashboard | Yes | Logged in user dashboard | 200, 401 |
+
+### How Auth Works
+
+1. Sign up or log in to get a JWT access token from Supabase
+2. Pass the token in every protected request:
+
+Authorization: Bearer YOUR_TOKEN
+
+3. Server verifies the token with Supabase before allowing access
+4. Invalid or missing token returns 401
+
+### Why Supabase?
+We never store passwords ourselves. Supabase handles account storage, password hashing, and token signing. Our backend only verifies the tokens Supabase issues.
+
+### Swagger UI
+Interactive docs with lock icons on protected routes at http://localhost:3000/docs
+
+Click Authorize, paste your JWT token, and test protected routes directly from the browser.
+
+![Swagger Auth](swagger-auth.png)
+
 ## About
 
 Built by Murtaza Mustafa — Back-End AI Engineering Intern at FlyRank  
