@@ -5,6 +5,12 @@ const { Pool } = require('pg');
 
 const app = express();
 const db = new Pool({ connectionString: process.env.DATABASE_URL });
+const { createClient } = require('@supabase/supabase-js');
+
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_KEY
+);
 
 app.use(express.json());
 
@@ -120,4 +126,5 @@ app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 app.listen(3000, () => {
   console.log(`Server is running on http://localhost:3000`);
+   console.log('Connected to Supabase');
 });
