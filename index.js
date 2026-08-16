@@ -161,6 +161,29 @@ app.post('/auth/login', async (req, res) => {
   });
 });
 
+
+app.get('/public/info', (req, res) => {
+  res.json({ message: "Welcome stranger! This info is public." });
+});
+
+
+app.get('/protected/profile', (req, res) => {
+  const authHeader = req.headers['authorization'];
+
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: "Access token required" });
+  }
+
+  const token = authHeader.split(' ')[1];
+
+  if (!token) {
+    return res.status(401).json({ error: "Access token required" });
+  }
+
+ 
+  res.json({ message: "Token received but not verified yet" });
+});
+
 app.listen(3000, () => {
   console.log(`Server is running on http://localhost:3000`);
    console.log('Connected to Supabase');
