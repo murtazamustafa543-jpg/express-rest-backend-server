@@ -287,6 +287,30 @@ Click Authorize, paste your JWT token, and test protected routes directly from t
 
 ![Swagger Auth](swagger-auth.png)
 
+
+### Assignment 5 — Polite Scraper — Books to Scrape
+
+## Target Classification
+
+- **Site:** https://books.toscrape.com
+- **Why:** This is a public sandbox built specifically for scraping practice
+- **Scope:** First 3 catalogue pages only (60 books)
+- **Data collected:** Title, price, availability, rating, description, URL, fetch time
+- **Robots.txt:** No restrictions found — site explicitly welcomes scrapers
+- **Appropriate because:** The site exists solely for this purpose and explicitly invites scraping
+
+I will not reuse this code on another site without checking its rules and terms first.
+
+## How to Run
+```bash
+npm install
+node src/index.js
+```
+
+## Ethics Note
+Always use an official API when one exists. Never bypass logins, paywalls, or blocks. 
+Collect only what you need. Be a polite guest — identify yourself, go slowly, cache aggressively.
+
 ## About
 
 Built by Murtaza Mustafa — Back-End AI Engineering Intern at FlyRank  
