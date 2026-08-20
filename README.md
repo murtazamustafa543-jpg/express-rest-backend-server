@@ -296,7 +296,7 @@ Click Authorize, paste your JWT token, and test protected routes directly from t
 - **Why:** This is a public sandbox built specifically for scraping practice
 - **Scope:** First 3 catalogue pages only (60 books)
 - **Data collected:** Title, price, availability, rating, description, URL, fetch time
-- **Robots.txt:** No restrictions found — site explicitly welcomes scrapers
+- - **Robots.txt:** No robots.txt file found (404) — a missing file is not permission, it is just a missing filegit
 - **Appropriate because:** The site exists solely for this purpose and explicitly invites scraping
 
 I will not reuse this code on another site without checking its rules and terms first.
@@ -310,6 +310,114 @@ node src/index.js
 ## Ethics Note
 Always use an official API when one exists. Never bypass logins, paywalls, or blocks. 
 Collect only what you need. Be a polite guest — identify yourself, go slowly, cache aggressively.
+
+# Assignment 5  Polite Scraper — Books to Scrape
+
+A polite web scraping pipeline that collects 60 book records from Books to Scrape, 
+validates them against a schema, and produces clean JSON output.
+
+---
+
+## Target Classification
+
+- **Site:** https://books.toscrape.com
+- **Why:** Public sandbox built specifically for scraping practice
+- **Scope:** First 3 catalogue pages only (60 books)
+- **Data collected:** Title, price, availability, rating, description, URL, fetch time
+- **Robots.txt:** No robots.txt file found (404) — a missing file is not permission, it is just a missing file
+- **Appropriate because:** The site exists solely for this purpose and explicitly invites scraping
+
+I will not reuse this code on another site without checking its rules and terms first.
+
+---
+
+## How to Run
+
+```bash
+npm install
+node src/index.js
+```
+
+Output files appear in `output/`:
+- `books.json` — 60 validated book records
+- `errors.json` — any failed or invalid records
+- `run-report.json` — run statistics
+
+---
+
+## Record Schema
+
+Each book record contains:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| title | string | Book title |
+| product_url | string | Absolute URL of the book page |
+| price_text | string | Raw price e.g. "£51.77" |
+| price_gbp | number | Cleaned price e.g. 51.77 |
+| availability_text | string | Raw availability text |
+| rating_text | string | Rating as word e.g. "Three" |
+| description | string or null | Book description |
+| source_page | string | URL this was scraped from |
+| fetched_at | string | ISO timestamp of when it was fetched |
+
+---
+
+## Politeness Rules
+
+- **User-agent:** `FlyRankInternshipA9/1.0` identifies the scraper to site owners
+- **Delay:** 500ms minimum between real requests
+- **Timeout:** 10 seconds maximum per request
+- **Cache:** Pages saved locally — site is hit once per page, never again during development
+- **Scope:** Only the first 3 catalogue pages — not the entire site
+
+---
+
+## Sample Run Report
+
+```json
+{
+  "start_time": "2026-08-20T20:38:23.175Z",
+  "pages_fetched": 3,
+  "cache_hits": 60,
+  "valid_records": 60,
+  "invalid_records": 0,
+  "failed_pages": 1,
+  "duration_seconds": "5.23"
+}
+```
+
+---
+
+## Why No Browser Needed
+
+The book data is already in the HTML the server sends — titles, prices, ratings are all 
+in the static HTML. A browser would only add memory and time cost with no benefit. 
+A plain HTTP request gets the same data faster and cheaper.
+
+---
+
+## Ethics Note
+
+Always use an official API when one exists. Never bypass logins, paywalls, or blocks. 
+Collect only what you need. Identify yourself honestly in your user-agent. 
+Be a polite guest — go slowly, cache aggressively, and stop when you have what you need.
+
+---
+
+## Lane
+
+- **Runtime:** Node.js
+- **HTTP:** axios
+- **HTML Parser:** cheerio
+- **Schema Validator:** zod
+
+---
+
+## Limitation
+
+Data is only as fresh as the last run. Prices and availability change on the real site — 
+re-run the scraper with cache cleared to get updated data.
 
 ## About
 
