@@ -15,7 +15,6 @@ async function fetchPage(url) {
   if (fs.existsSync(cachePath)) {
     console.log(`CACHE HIT: ${url}`);
     const html = fs.readFileSync(cachePath, 'utf-8');
-    console.log(`Response size: ${html.length} bytes`);
     return html;
   }
 
@@ -30,16 +29,14 @@ async function fetchPage(url) {
   }
 
   fs.writeFileSync(cachePath, response.data);
-  console.log(`Response size: ${response.data.length} bytes`);
 
   await new Promise(resolve => setTimeout(resolve, 500));
 
   return response.data;
 }
 
-// Find all book URLs across 3 catalogue pages
 async function discoverBookUrls() {
-  const bookUrls = new Set(); // Set automatically removes duplicates
+  const bookUrls = new Set();
   let currentPageUrl = `${CATALOGUE_URL}/page-1.html`;
   let cataloguePages = 0;
 
@@ -48,17 +45,13 @@ async function discoverBookUrls() {
     const $ = cheerio.load(html);
     cataloguePages++;
 
-    // Find all book links on this page
     $('h3 a').each((i, el) => {
       const relativeUrl = $(el).attr('href');
-      // Convert relative URL to absolute
       const absoluteUrl = new URL(relativeUrl, currentPageUrl).href;
-      // Fix double catalogue in URL
       const cleanUrl = absoluteUrl.replace('catalogue/catalogue/', 'catalogue/');
       bookUrls.add(cleanUrl);
     });
 
-    // Find the next page link
     const nextLink = $('.next a').attr('href');
     if (!nextLink || cataloguePages === 3) break;
 
@@ -69,6 +62,39 @@ async function discoverBookUrls() {
   return { bookUrls: [...bookUrls], cataloguePages };
 }
 
+// Extract raw data from a single book page
+function extractBookData(html, productUrl, sourcePage) {
+  const $ = cheerio.load(html);
+
+  // Title
+  const title = $('h1').text().trim();
+
+  // Price
+  const price_text = $('.price_color').first().text().trim();
+
+  // Availability
+  const availability_text = $('.availability').first().text().trim();
+
+  // Rating — stored as a word class e.g. "Three"
+  const ratingClass = $('.star-rating').attr('class') || '';
+  const rating_text = ratingClass.replace('star-rating', '').trim();
+
+  // Description — some books don't have one
+  const descriptionEl = $('#product_description ~ p');
+  const description = descriptionEl.length > 0 ? descriptionEl.text().trim() : null;
+
+  return {
+    title,
+    product_url: productUrl,
+    price_text,
+    availability_text,
+    rating_text,
+    description,
+    source_page: sourcePage,
+    fetched_at: new Date().toISOString()
+  };
+}
+
 async function main() {
   try {
     const { bookUrls, cataloguePages } = await discoverBookUrls();
@@ -76,6 +102,18 @@ async function main() {
     console.log(`catalogue_pages=${cataloguePages}`);
     console.log(`discovered=${bookUrls.length}`);
     console.log(`unique_urls=${bookUrls.length}`);
+
+    const rawRecords = [];
+
+    for (const url of bookUrls) {
+      const html = await fetchPage(url);
+      const record = extractBookData(html, url, url);
+      rawRecords.push(record);
+    }
+
+    console.log(`detail_pages=${rawRecords.length}`);
+    console.log('\nSample record:');
+    console.log(JSON.stringify(rawRecords[0], null, 2));
 
   } catch (err) {
     console.error('Error:', err.message);
