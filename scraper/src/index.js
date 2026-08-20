@@ -10,7 +10,6 @@ const CACHE_DIR = path.join(__dirname, '../cache');
 const OUTPUT_DIR = path.join(__dirname, '../output');
 const USER_AGENT = 'FlyRankInternshipA9/1.0 (https://github.com/murtazamustafa543-jpg/express-rest-server)';
 
-// Schema for a valid book record
 const BookSchema = z.object({
   title: z.string().min(1),
   product_url: z.string().url(),
@@ -23,12 +22,24 @@ const BookSchema = z.object({
   fetched_at: z.string()
 });
 
+// Track run stats
+const runStats = {
+  start_time: new Date().toISOString(),
+  pages_fetched: 0,
+  cache_hits: 0,
+  valid_records: 0,
+  invalid_records: 0,
+  failed_pages: 0,
+  duration_seconds: 0
+};
+
 async function fetchPage(url) {
   const filename = url.replace(/[^a-z0-9]/gi, '_').slice(0, 100) + '.html';
   const cachePath = path.join(CACHE_DIR, filename);
 
   if (fs.existsSync(cachePath)) {
     console.log(`CACHE HIT: ${url}`);
+    runStats.cache_hits++;
     const html = fs.readFileSync(cachePath, 'utf-8');
     return html;
   }
@@ -44,6 +55,7 @@ async function fetchPage(url) {
   }
 
   fs.writeFileSync(cachePath, response.data);
+  runStats.pages_fetched++;
   await new Promise(resolve => setTimeout(resolve, 500));
 
   return response.data;
@@ -86,8 +98,6 @@ function extractBookData(html, productUrl, sourcePage) {
   const rating_text = ratingClass.replace('star-rating', '').trim();
   const descriptionEl = $('#product_description ~ p');
   const description = descriptionEl.length > 0 ? descriptionEl.text().trim() : null;
-
-  // Convert "£51.77" to 51.77
   const price_gbp = parseFloat(price_text.replace('£', '').trim());
 
   return {
@@ -104,6 +114,8 @@ function extractBookData(html, productUrl, sourcePage) {
 }
 
 async function main() {
+  const startTime = Date.now();
+
   try {
     const { bookUrls, cataloguePages } = await discoverBookUrls();
 
@@ -111,36 +123,50 @@ async function main() {
     console.log(`discovered=${bookUrls.length}`);
     console.log(`unique_urls=${bookUrls.length}`);
 
+    // Add one fake URL to test failure handling
+    const allUrls = [
+      ...bookUrls,
+      'https://books.toscrape.com/catalogue/fake-book-that-does-not-exist/index.html'
+    ];
+
     const validRecords = [];
     const errorRecords = [];
 
-    for (const url of bookUrls) {
-      const html = await fetchPage(url);
-      const raw = extractBookData(html, url, url);
+    for (const url of allUrls) {
+      try {
+        const html = await fetchPage(url);
+        const raw = extractBookData(html, url, url);
+        const result = BookSchema.safeParse(raw);
 
-      // Validate against schema
-      const result = BookSchema.safeParse(raw);
-
-      if (result.success) {
-        validRecords.push(result.data);
-      } else {
-        errorRecords.push({
-          url,
-          reason: result.error.message
-        });
+        if (result.success) {
+          validRecords.push(result.data);
+        } else {
+          errorRecords.push({ url, reason: result.error.message });
+          runStats.invalid_records++;
+        }
+      } catch (err) {
+        // One bad page — log it and continue
+        console.error(`FAILED: ${url} — ${err.message}`);
+        errorRecords.push({ url, reason: err.message });
+        runStats.failed_pages++;
       }
     }
 
-    // Save valid records — use product_url as identity to avoid duplicates
+    // Deduplicate by product_url
     const unique = Object.values(
       Object.fromEntries(validRecords.map(r => [r.product_url, r]))
     );
 
+    runStats.valid_records = unique.length;
+    runStats.duration_seconds = ((Date.now() - startTime) / 1000).toFixed(2);
+
+    // Save books.json
     fs.writeFileSync(
       path.join(OUTPUT_DIR, 'books.json'),
       JSON.stringify(unique, null, 2)
     );
 
+    // Save errors.json
     if (errorRecords.length > 0) {
       fs.writeFileSync(
         path.join(OUTPUT_DIR, 'errors.json'),
@@ -148,13 +174,20 @@ async function main() {
       );
     }
 
+    // Save run report
+    fs.writeFileSync(
+      path.join(OUTPUT_DIR, 'run-report.json'),
+      JSON.stringify(runStats, null, 2)
+    );
+
     console.log(`valid_records=${unique.length}`);
-    console.log(`invalid_records=${errorRecords.length}`);
-    console.log('\nSample record:');
-    console.log(JSON.stringify(unique[0], null, 2));
+    console.log(`invalid_records=${runStats.invalid_records}`);
+    console.log(`failed_pages=${runStats.failed_pages}`);
+    console.log('\nRun report:');
+    console.log(JSON.stringify(runStats, null, 2));
 
   } catch (err) {
-    console.error('Error:', err.message);
+    console.error('Fatal error:', err.message);
   }
 }
 
