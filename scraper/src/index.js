@@ -2,14 +2,29 @@ const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
 const cheerio = require('cheerio');
+const { z } = require('zod');
 
 const BASE_URL = 'https://books.toscrape.com';
 const CATALOGUE_URL = `${BASE_URL}/catalogue`;
 const CACHE_DIR = path.join(__dirname, '../cache');
+const OUTPUT_DIR = path.join(__dirname, '../output');
 const USER_AGENT = 'FlyRankInternshipA9/1.0 (https://github.com/murtazamustafa543-jpg/express-rest-server)';
 
+// Schema for a valid book record
+const BookSchema = z.object({
+  title: z.string().min(1),
+  product_url: z.string().url(),
+  price_text: z.string(),
+  price_gbp: z.number(),
+  availability_text: z.string(),
+  rating_text: z.string(),
+  description: z.string().nullable(),
+  source_page: z.string().url(),
+  fetched_at: z.string()
+});
+
 async function fetchPage(url) {
-  const filename = url.replace(/[^a-z0-9]/gi, '_') + '.html';
+  const filename = url.replace(/[^a-z0-9]/gi, '_').slice(0, 100) + '.html';
   const cachePath = path.join(CACHE_DIR, filename);
 
   if (fs.existsSync(cachePath)) {
@@ -29,7 +44,6 @@ async function fetchPage(url) {
   }
 
   fs.writeFileSync(cachePath, response.data);
-
   await new Promise(resolve => setTimeout(resolve, 500));
 
   return response.data;
@@ -62,31 +76,25 @@ async function discoverBookUrls() {
   return { bookUrls: [...bookUrls], cataloguePages };
 }
 
-// Extract raw data from a single book page
 function extractBookData(html, productUrl, sourcePage) {
   const $ = cheerio.load(html);
 
-  // Title
   const title = $('h1').text().trim();
-
-  // Price
   const price_text = $('.price_color').first().text().trim();
-
-  // Availability
   const availability_text = $('.availability').first().text().trim();
-
-  // Rating — stored as a word class e.g. "Three"
   const ratingClass = $('.star-rating').attr('class') || '';
   const rating_text = ratingClass.replace('star-rating', '').trim();
-
-  // Description — some books don't have one
   const descriptionEl = $('#product_description ~ p');
   const description = descriptionEl.length > 0 ? descriptionEl.text().trim() : null;
+
+  // Convert "£51.77" to 51.77
+  const price_gbp = parseFloat(price_text.replace('£', '').trim());
 
   return {
     title,
     product_url: productUrl,
     price_text,
+    price_gbp,
     availability_text,
     rating_text,
     description,
@@ -103,17 +111,47 @@ async function main() {
     console.log(`discovered=${bookUrls.length}`);
     console.log(`unique_urls=${bookUrls.length}`);
 
-    const rawRecords = [];
+    const validRecords = [];
+    const errorRecords = [];
 
     for (const url of bookUrls) {
       const html = await fetchPage(url);
-      const record = extractBookData(html, url, url);
-      rawRecords.push(record);
+      const raw = extractBookData(html, url, url);
+
+      // Validate against schema
+      const result = BookSchema.safeParse(raw);
+
+      if (result.success) {
+        validRecords.push(result.data);
+      } else {
+        errorRecords.push({
+          url,
+          reason: result.error.message
+        });
+      }
     }
 
-    console.log(`detail_pages=${rawRecords.length}`);
+    // Save valid records — use product_url as identity to avoid duplicates
+    const unique = Object.values(
+      Object.fromEntries(validRecords.map(r => [r.product_url, r]))
+    );
+
+    fs.writeFileSync(
+      path.join(OUTPUT_DIR, 'books.json'),
+      JSON.stringify(unique, null, 2)
+    );
+
+    if (errorRecords.length > 0) {
+      fs.writeFileSync(
+        path.join(OUTPUT_DIR, 'errors.json'),
+        JSON.stringify(errorRecords, null, 2)
+      );
+    }
+
+    console.log(`valid_records=${unique.length}`);
+    console.log(`invalid_records=${errorRecords.length}`);
     console.log('\nSample record:');
-    console.log(JSON.stringify(rawRecords[0], null, 2));
+    console.log(JSON.stringify(unique[0], null, 2));
 
   } catch (err) {
     console.error('Error:', err.message);
