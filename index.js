@@ -2,7 +2,7 @@ const swaggerUi = require('swagger-ui-express');
 const swaggerDocument = require('./openapi.json');
 const express = require('express');
 const { Pool } = require('pg');
-
+const enrichRouter = require('./src/routes/enrich');
 const app = express();
 const db = new Pool({ connectionString: process.env.DATABASE_URL });
 const { createClient } = require('@supabase/supabase-js');
@@ -214,6 +214,8 @@ app.post('/auth/logout', requireAuth, async (req, res) => {
 
   res.status(204).send();
 });
+
+app.use('/', enrichRouter);
 
 app.listen(3000, () => {
   console.log(`Server is running on http://localhost:3000`);
