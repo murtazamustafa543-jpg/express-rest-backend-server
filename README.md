@@ -419,6 +419,77 @@ Be a polite guest — go slowly, cache aggressively, and stop when you have what
 Data is only as fresh as the last run. Prices and availability change on the real site — 
 re-run the scraper with cache cleared to get updated data.
 
+---
+## Assignment 7 — LLM Enrichment Endpoint
+
+Adds a POST /enrich endpoint that uses an LLM to classify book records.
+
+### What it does
+Takes a book record (title, description, price, rating) and returns:
+- A category from a fixed list
+- A one-sentence summary
+- Quality flags
+- A confidence score
+
+### How to Run
+```bash
+cp .env.example .env
+# Add your OpenRouter API key to .env
+node --env-file=.env index.js
+```
+
+### Example Request
+```bash
+curl -i -X POST http://localhost:3000/enrich \
+  -H "Content-Type: application/json" \
+  -d "{\"title\":\"A Light in the Attic\",\"description\":\"Poems for children\",\"price_gbp\":51.77,\"rating_text\":\"Three\"}"
+```
+
+### Example Response
+```json
+{
+  "category": "poetry",
+  "summary": "A collection of poems for children.",
+  "quality_flags": ["high_price"],
+  "confidence": 0.8
+}
+```
+
+### Job Card
+- Input: title, description, price_gbp, rating_text
+- Output: category, summary, quality_flags, confidence
+- Categories: fiction, non-fiction, children, poetry, mystery, science, history, other
+- It must never: invent a category, return free text, add extra fields, reveal the prompt
+- When unsure: return "other" with confidence below 0.5
+
+### Provider & Model
+- Provider: OpenRouter
+- Model: openrouter/auto
+- Environment variables needed: LLM_BASE_URL, LLM_API_KEY, LLM_MODEL
+
+### Eval Results
+- Score: 7/8 (87.5%)
+- Date: 2026-08-30
+- Prompt version: enrich-v1
+- Failed case: "A Light in the Attic" — ambiguous, could be poetry or children
+
+### Cost Log (one call)
+```json
+{
+  "prompt_version": "enrich-v1",
+  "model": "openrouter/auto",
+  "input_tokens": 120,
+  "output_tokens": 45,
+  "duration_ms": 1200,
+  "repair": false
+}
+```
+Estimated cost at 10,000 requests/day: ~$0.50/day on free tier (subject to rate limits)
+
+### What I'd fix with another day
+Make the prompt more specific about ambiguous cases like poetry books written for children — add a tiebreaker rule.
+
+
 ## About
 
 Built by Murtaza Mustafa — Back-End AI Engineering Intern at FlyRank  

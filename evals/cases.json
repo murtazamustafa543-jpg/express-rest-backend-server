@@ -1,0 +1,74 @@
+[
+  {
+    "input": {
+      "title": "A Light in the Attic",
+      "description": "A collection of humorous and whimsical poems for children by Shel Silverstein.",
+      "price_gbp": 51.77,
+      "rating_text": "Three"
+    },
+    "expected_category": "poetry"
+  },
+  {
+    "input": {
+      "title": "Sapiens: A Brief History of Humankind",
+      "description": "A book about the history of the human species from the Stone Age to the present.",
+      "price_gbp": 54.23,
+      "rating_text": "Five"
+    },
+    "expected_category": "history"
+  },
+  {
+    "input": {
+      "title": "Sharp Objects",
+      "description": "A psychological thriller about a journalist who returns to her hometown to investigate murders.",
+      "price_gbp": 47.82,
+      "rating_text": "Four"
+    },
+    "expected_category": "mystery"
+  },
+  {
+    "input": {
+      "title": "The Bear and the Piano",
+      "description": "A beautifully illustrated story about a bear who discovers a piano in the forest.",
+      "price_gbp": 36.89,
+      "rating_text": "One"
+    },
+    "expected_category": "children"
+  },
+  {
+    "input": {
+      "title": "Soumission",
+      "description": "A novel about France under an Islamist government.",
+      "price_gbp": 56.88,
+      "rating_text": "One"
+    },
+    "expected_category": "fiction"
+  },
+  {
+    "input": {
+      "title": "Libertarianism for Beginners",
+      "description": "An introduction to libertarian political philosophy.",
+      "price_gbp": 51.33,
+      "rating_text": "Two"
+    },
+    "expected_category": "non-fiction"
+  },
+  {
+    "input": {
+      "title": "Olio",
+      "description": null,
+      "price_gbp": 23.88,
+      "rating_text": "One"
+    },
+    "expected_category": "other"
+  },
+  {
+    "input": {
+      "title": "How Music Works",
+      "description": "A book exploring the science and culture of music.",
+      "price_gbp": 37.32,
+      "rating_text": "Five"
+    },
+    "expected_category": "non-fiction"
+  }
+]
