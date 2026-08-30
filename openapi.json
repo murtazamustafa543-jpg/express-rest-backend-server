@@ -186,6 +186,77 @@
           "404": { "description": "Task not found" }
         }
       }
+    },
+    "/enrich": {
+      "post": {
+        "summary": "Enrich a book record using AI",
+        "description": "Takes a book record and returns a category, summary, quality flags, and confidence score using an LLM.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["title", "price_gbp", "rating_text"],
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "example": "A Light in the Attic"
+                  },
+                  "description": {
+                    "type": "string",
+                    "nullable": true,
+                    "example": "A collection of poems for children."
+                  },
+                  "price_gbp": {
+                    "type": "number",
+                    "example": 51.77
+                  },
+                  "rating_text": {
+                    "type": "string",
+                    "example": "Three"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully enriched book record",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "category": {
+                      "type": "string",
+                      "enum": ["fiction", "non-fiction", "children", "poetry", "mystery", "science", "history", "other"]
+                    },
+                    "summary": { "type": "string" },
+                    "quality_flags": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "enum": ["no_description", "low_rating", "high_price", "none"]
+                      }
+                    },
+                    "confidence": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "Invalid input" },
+          "422": { "description": "Model output could not be validated" },
+          "503": { "description": "LLM service is disabled" },
+          "504": { "description": "Model call timed out" }
+        }
+      }
     }
   }
 }
